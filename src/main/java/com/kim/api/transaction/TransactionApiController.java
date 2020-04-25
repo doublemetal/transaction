@@ -1,5 +1,6 @@
 package com.kim.api.transaction;
 
+import com.kim.api.core.TransactionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -7,6 +8,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/transaction")
 @RestController
 public class TransactionApiController {
+    private final TransactionBO transactionBO;
+
+    public TransactionApiController(TransactionBO transactionBO) {
+        this.transactionBO = transactionBO;
+    }
 
     /**
      * 카드결제
@@ -14,8 +20,8 @@ public class TransactionApiController {
      * @return 결제 결과
      */
     @PostMapping("/payment")
-    public String payment() {
-        return "payment";
+    public TransactionResponse payment(Transaction transaction) {
+        return transactionBO.payment(transaction);
     }
 
     /**
@@ -34,7 +40,7 @@ public class TransactionApiController {
      * @return 결제 정보
      */
     @GetMapping("/{transactionId}")
-    public String getTransactionId(@PathVariable String transactionId) {
-        return "payment";
+    public String getTransaction(@PathVariable String transactionId) {
+        return "transaction";
     }
 }
