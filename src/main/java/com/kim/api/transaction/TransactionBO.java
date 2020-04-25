@@ -1,5 +1,6 @@
 package com.kim.api.transaction;
 
+import com.kim.api.card.TransactionExternalBO;
 import com.kim.api.core.TransactionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class TransactionBO {
+    private final TransactionExternalBO transactionExternalBO;
+
+    public TransactionBO(TransactionExternalBO transactionExternalBO) {
+        this.transactionExternalBO = transactionExternalBO;
+    }
 
     /**
      * 요청 받은 정보로 결제를 진행합니다
