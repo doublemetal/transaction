@@ -1,4 +1,4 @@
-package com.kim.api.transaction;
+package com.kim.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -20,7 +20,7 @@ public class TransactionApiController {
      * @return 결제 결과
      */
     @PostMapping("/payment")
-    public TransactionResponse payment(Transaction transaction) {
+    public TransactionResponse payment(@RequestBody Transaction transaction) {
         return transactionBO.payment(transaction);
     }
 

@@ -24,6 +24,10 @@ public class TransactionBO {
      */
     public TransactionResponse payment(Transaction transaction) {
         TransactionResponse response = new TransactionResponse();
+
+        response.setTransactionId("2020042600000000001");
+        response.setRawData("test");
+
         return response;
     }
 }
