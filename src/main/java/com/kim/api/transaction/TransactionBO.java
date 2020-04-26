@@ -30,17 +30,15 @@ public class TransactionBO {
     public Transaction.Response payment(Transaction.Request request) {
         Transaction transaction = Transaction.create(request);
 
-        // TODO 결제가 가능한지 체크
-
+        // TODO 결제가 가능한 카드인지 체크 (Multi thread)
         transactionExternalBO.payment(transaction);
 
+        transaction.setEncryptedCardNumber(transaction.getCardNumber());
         // TODO 카드번호 암호화
         // TODO rawData 생성
         // TODO transactionId 생성
-
-        transaction.setTransactionId("test");
-        transaction.setRawData("rawData");
         Transaction save = transactionRepository.save(transaction);
+
         return Transaction.Response.create(save, new CommonResponse("success", "결제 성공"));
     }
 }
