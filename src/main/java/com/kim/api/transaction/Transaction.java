@@ -9,6 +9,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 
 /**
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
  */
 @Getter
 @Setter
+@Table(name = "trx")
 @Entity
 public class Transaction {
     @Id
@@ -35,8 +37,8 @@ public class Transaction {
 
     @Column(length = 4)
     private String period; // 유효기간(4자리 숫자, mmyy)
-    private int month; // 할부개월수, 0(일시불), 1 ~ 12, 취소는 일시불(00)으로 저장
-    private int cvc; // cvc(3자리 숫자)
+    private String month; // 할부개월수, 0(일시불), 1 ~ 12, 취소는 일시불(00)으로 저장
+    private String cvc; // cvc(3자리 숫자)
 
     private BigDecimal payAmount; // 거래금액(100원 이상, 10억원 이하, 숫자), 취소는 결제 금액보다 작아야함
     private BigDecimal vat; // 부가가치세, 거래금액보다 작아야함, 취소는 원거래와 취소의 부가가치세가 같아야함
@@ -49,8 +51,8 @@ public class Transaction {
     public static class Request {
         private TransactionType transactionType; // 거래유형
         private String period; // 유효기간(4자리 숫자, mmyy)
-        private int cvc; // cvc(3자리 숫자)
-        private int month; // 할부개월수, 0(일시불), 1 ~ 12
+        private String cvc; // cvc(3자리 숫자)
+        private String month; // 할부개월수, 0(일시불), 1 ~ 12
         private BigDecimal payAmount; // 거래금액(100원 이상, 10억원 이하, 숫자)
         private BigDecimal vat; // 부가가치세
     }

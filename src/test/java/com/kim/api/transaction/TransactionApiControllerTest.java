@@ -31,8 +31,8 @@ class TransactionApiControllerTest {
     void payment() throws Exception {
         Transaction.Request transaction = new Transaction.Request();
         transaction.setTransactionType(TransactionType.PAYMENT);
-        transaction.setCvc(123);
-        transaction.setMonth(12);
+        transaction.setCvc("012");
+        transaction.setMonth("00");
         transaction.setPeriod("1212");
         transaction.setPayAmount(new BigDecimal(100));
 

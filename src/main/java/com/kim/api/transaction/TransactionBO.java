@@ -38,6 +38,7 @@ public class TransactionBO {
         // TODO rawData 생성
         // TODO transactionId 생성
 
+        transaction.setTransactionId("test");
         Transaction save = transactionRepository.save(transaction);
         return Transaction.Response.create(save, new CommonResponse("success", "결제 성공"));
     }
