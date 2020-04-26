@@ -31,7 +31,7 @@ public class TransactionApiController {
      * @return 결제취소 결과
      */
     @PostMapping("/cancel")
-    public Transaction.Response cancel(Transaction.Cancel cancel) {
+    public Transaction.Response cancel(@Valid @RequestBody Transaction.Cancel cancel) {
         return transactionBO.cancel(cancel);
     }
 
@@ -42,6 +42,6 @@ public class TransactionApiController {
      */
     @GetMapping("/{transactionId}")
     public Transaction.Data getTransaction(@PathVariable String transactionId) {
-        return transactionBO.getTransaction(transactionId);
+        return transactionBO.getCancelTransaction(transactionId);
     }
 }

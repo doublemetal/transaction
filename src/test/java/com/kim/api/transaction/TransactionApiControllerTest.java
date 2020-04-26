@@ -91,21 +91,26 @@ class TransactionApiControllerTest {
     @Test
     void cancel() throws Exception {
         Transaction.Request request = getTestTransaction();
-        request.setTransactionType(TransactionType.CANCEL);
 
-        MvcResult mvcResult = mvc.perform(post("/api/transaction/cancel")
+        MvcResult mvcResult = mvc.perform(post("/api/transaction/payment")
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
                 .content(objectMapper.writeValueAsString(request)))
                 .andReturn();
 
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
-        mvc.perform(post("/api/transaction/" + response.getTransactionId() + "/cancel")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString()))
+        Transaction.Cancel cancel = new Transaction.Cancel();
+        cancel.setTransactionId(response.getTransactionId());
+        cancel.setPayAmount(request.getPayAmount());
+        cancel.setVat(request.getVat());
+
+        mvc.perform(post("/api/transaction/cancel")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(cancel)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.transactionId").value(response.getTransactionId()))
-                .andExpect(jsonPath("$.payAmount").value(request.getPayAmount()));
+                .andExpect(jsonPath("$.transactionId").value(cancel.getTransactionId()))
+                .andExpect(jsonPath("$.rawData").exists());
     }
 }

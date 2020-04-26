@@ -1,6 +1,7 @@
 package com.kim.api.card;
 
 import com.kim.api.transaction.Transaction;
+import com.kim.api.transaction.enums.TransactionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class TransactionExternalBO {
     public void payment(Transaction transaction) {
-        log.info("결제 성공");
-    }
-
-    public void cancel(Transaction.Cancel cancel) {
-        log.info("결제취소 성공");
+        if (transaction.getTransactionType() == TransactionType.PAYMENT) {
+            log.info("결제 성공");
+        } else {
+            log.info("결제취소 성공");
+        }
     }
 }

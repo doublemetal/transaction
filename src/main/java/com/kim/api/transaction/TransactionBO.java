@@ -51,12 +51,11 @@ public class TransactionBO {
 
         // TODO 결제가 가능한 카드인지 체크 (Multi thread)
 
-        transactionExternalBO.payment(transaction);
-
         String cardInfo = StringUtils.join(StringUtils.DEFAULT_SEPARATOR, transaction.getCardNumber(), transaction.getPeriod(), transaction.getCvc());
         transaction.setEncryptedCardInfo(CryptoUtils.encrypt(cardInfo));
         transaction.setRawData(transaction.toString());
 
+        transactionExternalBO.payment(transaction);
         Transaction save = transactionRepository.save(transaction);
         return Transaction.Response.create(save, new CommonResponse("success", "Transaction success"));
     }
@@ -64,7 +63,7 @@ public class TransactionBO {
     /**
      * 결제정보조회
      */
-    public Transaction.Data getTransaction(String transactionId) {
+    public Transaction.Data getCancelTransaction(String transactionId) {
         Optional<Transaction> transaction = transactionRepository.findById(transactionId);
         return Transaction.Data.create(transaction.orElseThrow(noTransaction), new CommonResponse("success", "Transaction is exists"));
     }
@@ -83,10 +82,18 @@ public class TransactionBO {
         }
 
         Transaction original = transactionRepository.findById(cancel.getTransactionId()).orElseThrow(noTransaction);
-        if (!original.getPayAmount().equals(cancel.getPayAmount())) {
+        if (original.getPayAmount().compareTo(cancel.getPayAmount()) != 0) {
             throw new RuntimeException("Cancel amount is not valid");
         }
 
+        Transaction transaction = getCancelTransaction(cancel, original);
+
+        transactionExternalBO.payment(transaction);
+        Transaction save = transactionRepository.save(transaction);
+        return Transaction.Response.create(save, new CommonResponse("success", "Transaction cancel success"));
+    }
+
+    private Transaction getCancelTransaction(Transaction.Cancel cancel, Transaction original) {
         Transaction transaction = new Transaction();
         transaction.setPayAmount(cancel.getPayAmount());
         transaction.setTransactionId("12345678901234567890"); // TODO 신규 번호 할당
@@ -96,10 +103,7 @@ public class TransactionBO {
         transaction.setVat(cancel.getVat() == null ? original.getVat() : cancel.getVat());
         transaction.setEncryptedCardInfo(original.getEncryptedCardInfo());
         transaction.setMonth(Transaction.Cancel.DEFAULT_MONTH);
-
-        transactionExternalBO.cancel(cancel);
-
-        Transaction cancelTransaction = transactionRepository.save(transaction);
-        return Transaction.Response.create(cancelTransaction, new CommonResponse("success", "Transaction cancel success"));
+        transaction.setRawData(transaction.toString());
+        return transaction;
     }
 }
