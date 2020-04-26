@@ -34,6 +34,7 @@ class TransactionApiControllerTest {
         transaction.setCvc("012");
         transaction.setMonth("00");
         transaction.setPeriod("1212");
+        transaction.setCardNumber("1234567890123456");
         transaction.setPayAmount(new BigDecimal(100));
 
         mvc.perform(post("/api/transaction/payment")
@@ -41,6 +42,7 @@ class TransactionApiControllerTest {
                 .content(objectMapper.writeValueAsBytes(transaction))).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.transactionId").exists());
+                .andExpect(jsonPath("$.transactionId").exists())
+                .andExpect(jsonPath("$.rawData").exists());
     }
 }

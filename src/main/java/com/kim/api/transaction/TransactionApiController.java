@@ -3,6 +3,8 @@ package com.kim.api.transaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @Slf4j
 @RequestMapping("/api/transaction")
 @RestController
@@ -19,7 +21,7 @@ public class TransactionApiController {
      * @return 결제 결과
      */
     @PostMapping("/payment")
-    public Transaction.Response payment(@RequestBody Transaction.Request request) {
+    public Transaction.Response payment(@Valid @RequestBody Transaction.Request request) {
         return transactionBO.payment(request);
     }
 

@@ -5,11 +5,10 @@ import com.kim.api.transaction.enums.TransactionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -30,14 +29,16 @@ public class Transaction {
     @Column(length = 10)
     private TransactionType transactionType; // 거래유형
 
-    @Column(length = 20)
+    @Transient
     private String cardNumber; // 카드번호, 10 ~ 20
     @Column(length = 300)
     private String encryptedCardNumber; // 암호화한 카드번호, 300자
 
     @Column(length = 4)
     private String period; // 유효기간(4자리 숫자, mmyy)
-    private String month; // 할부개월수, 0(일시불), 1 ~ 12, 취소는 일시불(00)으로 저장
+    @Column(length = 2)
+    private String month; // 할부개월수, 00(일시불), 1 ~ 12, 취소는 일시불(00)으로 저장
+    @Column(length = 3)
     private String cvc; // cvc(3자리 숫자)
 
     private BigDecimal payAmount; // 거래금액(100원 이상, 10억원 이하, 숫자), 취소는 결제 금액보다 작아야함
@@ -49,10 +50,21 @@ public class Transaction {
     @Getter
     @Setter
     public static class Request {
+        @NotNull
         private TransactionType transactionType; // 거래유형
+        @NotNull
+        @Length(min = 10, max = 16)
+        private String cardNumber;
+        @NotNull
+        @Length(min = 4, max = 4)
         private String period; // 유효기간(4자리 숫자, mmyy)
+        @NotNull
+        @Length(min = 3, max = 3)
         private String cvc; // cvc(3자리 숫자)
-        private String month; // 할부개월수, 0(일시불), 1 ~ 12
+        @NotNull
+        @Length(min = 2, max = 2)
+        private String month; // 할부개월수, 00(일시불), 1 ~ 12
+        @NotNull
         private BigDecimal payAmount; // 거래금액(100원 이상, 10억원 이하, 숫자)
         private BigDecimal vat; // 부가가치세
     }
