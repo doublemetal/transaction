@@ -10,7 +10,8 @@
 
 ## 테이블 설계
 
-- 
+- https://github.com/doublemetal/transaction/issues/8
+
 
 ## 문제해결 전략
 
