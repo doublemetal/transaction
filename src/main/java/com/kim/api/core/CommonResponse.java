@@ -1,6 +1,7 @@
 package com.kim.api.core;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -8,8 +9,14 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 public class CommonResponse<I> {
-    private String result; // 성공 혹은 실패 코드
-    private String message; // 호출 결과
-    private I info; // 기타 필요한 정보
+    protected String result; // 성공 혹은 실패 코드
+    protected String message; // 호출 결과
+    protected I info; // 기타 필요한 정보
+
+    public CommonResponse(String result, String message) {
+        this.result = result;
+        this.message = message;
+    }
 }

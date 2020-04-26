@@ -3,6 +3,7 @@ package com.kim.api.transaction;
 import com.kim.api.core.CommonResponse;
 import com.kim.api.transaction.enums.TransactionType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Column;
@@ -54,13 +55,37 @@ public class Transaction {
         private BigDecimal vat; // 부가가치세
     }
 
+    public static Transaction create(Request request) {
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(request.getTransactionType());
+        transaction.setPeriod(request.getPeriod());
+        transaction.setCvc(request.getCvc());
+        transaction.setMonth(request.getMonth());
+        transaction.setPayAmount(request.getPayAmount());
+        transaction.setVat(request.getVat());
+        return transaction;
+    }
+
     /**
      * 결제 성공 Response
      */
     @Getter
     @Setter
+    @NoArgsConstructor
     public static class Response extends CommonResponse {
         private String transactionId; // 거래번호
         private String rawData; // 카드사에 전달한 string 데이터(공통 헤더 + 데이터)
+
+        public Response(CommonResponse response) {
+            this.result = response.getResult();
+            this.message = response.getMessage();
+        }
+
+        public static Response create(Transaction transaction, CommonResponse commonResponse) {
+            Transaction.Response response = new Transaction.Response(commonResponse);
+            response.setTransactionId(transaction.getTransactionId());
+            response.setRawData(transaction.getRawData());
+            return response;
+        }
     }
 }

@@ -19,8 +19,8 @@ public class TransactionApiController {
      * @return 결제 결과
      */
     @PostMapping("/payment")
-    public Transaction.Response payment(@RequestBody Transaction transaction) {
-        return transactionBO.payment(transaction);
+    public Transaction.Response payment(@RequestBody Transaction.Request request) {
+        return transactionBO.payment(request);
     }
 
     /**
