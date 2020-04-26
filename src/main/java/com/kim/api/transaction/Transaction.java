@@ -112,7 +112,7 @@ public class Transaction {
     }
 
     /**
-     * 결제 성공 Response
+     * 결제/취소 성공 Response
      */
     @ToString
     @Getter
@@ -133,6 +133,23 @@ public class Transaction {
             response.setRawData(transaction.getRawData());
             return response;
         }
+    }
+
+    /**
+     * 결제취소 Request
+     */
+    @Getter
+    @Setter
+    public static class Cancel {
+        public static final String DEFAULT_MONTH = "00";
+
+        @NotNull
+        private TransactionType transactionType = TransactionType.CANCEL;
+        private String transactionId;
+
+        @NotNull
+        private BigDecimal payAmount;
+        private BigDecimal vat;
     }
 
     /**

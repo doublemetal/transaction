@@ -87,4 +87,25 @@ class TransactionApiControllerTest {
                 .andExpect(jsonPath("$.transactionId").value(response.getTransactionId()))
                 .andExpect(jsonPath("$.cvc").value(request.getCvc()));
     }
+
+    @Test
+    void cancel() throws Exception {
+        Transaction.Request request = getTestTransaction();
+        request.setTransactionType(TransactionType.CANCEL);
+
+        MvcResult mvcResult = mvc.perform(post("/api/transaction/cancel")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(request)))
+                .andReturn();
+
+        Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
+
+        mvc.perform(post("/api/transaction/" + response.getTransactionId() + "/cancel")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.transactionId").value(response.getTransactionId()))
+                .andExpect(jsonPath("$.payAmount").value(request.getPayAmount()));
+    }
 }

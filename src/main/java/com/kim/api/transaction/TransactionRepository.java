@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, String> {
-
+    int countByOriginalTransactionId(String originalTransactionId);
 }

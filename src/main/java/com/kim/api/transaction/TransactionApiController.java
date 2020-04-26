@@ -30,9 +30,9 @@ public class TransactionApiController {
      *
      * @return 결제취소 결과
      */
-    @GetMapping("/{transactionId}/cancel")
-    public String cancel(@PathVariable String transactionId) {
-        return "cancel";
+    @PostMapping("/cancel")
+    public Transaction.Response cancel(Transaction.Cancel cancel) {
+        return transactionBO.cancel(cancel);
     }
 
     /**

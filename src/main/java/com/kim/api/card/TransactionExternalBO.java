@@ -13,4 +13,8 @@ public class TransactionExternalBO {
     public void payment(Transaction transaction) {
         log.info("결제 성공");
     }
+
+    public void cancel(Transaction.Cancel cancel) {
+        log.info("결제취소 성공");
+    }
 }
