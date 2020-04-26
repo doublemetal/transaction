@@ -33,7 +33,7 @@ class TransactionApiControllerTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setCvc("012");
         transaction.setMonth("00");
-        transaction.setPeriod("121");
+        transaction.setPeriod("1212");
         transaction.setCardNumber("1234567890123456");
         transaction.setPayAmount(new BigDecimal(100));
 

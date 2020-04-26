@@ -1,6 +1,8 @@
 package com.kim.api.transaction;
 
+import com.kim.api.core.BigDecimalUtils;
 import com.kim.api.core.CommonResponse;
+import com.kim.api.core.StringUtils;
 import com.kim.api.transaction.enums.TransactionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,8 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -19,6 +23,9 @@ import java.math.BigDecimal;
 @Table(name = "trx")
 @Entity
 public class Transaction {
+    private static final String BLANK = "_";
+    private static final String NUMBER_BLANK = "0";
+
     @Id
     @Column(length = 20)
     private String transactionId; // 거래시간 + Sequence
@@ -27,22 +34,53 @@ public class Transaction {
     @Column(length = 20)
     private String originalTransactionId; // 취소의 원거래번호
     @Column(length = 10)
+    @Convert(converter = TransactionTypeConverter.class)
     private TransactionType transactionType; // 거래유형
 
     @Transient
     private String cardNumber; // 카드번호, 10 ~ 20
-    @Column(length = 300)
-    private String encryptedCardNumber; // 암호화한 카드번호, 300자
-
-    @Column(length = 4)
+    @Transient
     private String period; // 유효기간(4자리 숫자, mmyy)
+    @Transient
+    private String cvc; // cvc(3자리 숫자)
+    @Column(length = 300)
+    private String encryptedCardInfo; // 암호화한 카드 정보, 300자
+
     @Column(length = 2)
     private String month; // 할부개월수, 00(일시불), 1 ~ 12, 취소는 일시불(00)으로 저장
-    @Column(length = 3)
-    private String cvc; // cvc(3자리 숫자)
 
     private BigDecimal payAmount; // 거래금액(100원 이상, 10억원 이하, 숫자), 취소는 결제 금액보다 작아야함
     private BigDecimal vat; // 부가가치세, 거래금액보다 작아야함, 취소는 원거래와 취소의 부가가치세가 같아야함
+
+    public static Transaction create(Request request) {
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(request.getTransactionType());
+
+        transaction.setCardNumber(request.getCardNumber());
+        transaction.setPeriod(request.getPeriod());
+        transaction.setCvc(request.getCvc());
+        transaction.setMonth(request.getMonth());
+
+        transaction.setPayAmount(request.getPayAmount());
+        transaction.setVat(request.getVat());
+        return transaction;
+    }
+
+    public String toString() {
+        String data = StringUtils.rightPad(transactionType.name(), 10, BLANK)
+                + StringUtils.rightPad(transactionId, 20, BLANK)
+                + StringUtils.rightPad(cardNumber, 20, BLANK)
+                + StringUtils.leftPad(month, 2, NUMBER_BLANK)
+                + StringUtils.rightPad(period, 4, BLANK)
+                + StringUtils.rightPad(cvc, 3, BLANK)
+                + StringUtils.leftPad(BigDecimalUtils.getPlainString(payAmount), 10, BLANK)
+                + StringUtils.leftPad(BigDecimalUtils.getPlainString(vat), 10, NUMBER_BLANK)
+                + StringUtils.rightPad(StringUtils.defaultIfEmpty(originalTransactionId, BLANK), 20, BLANK)
+                + StringUtils.rightPad(encryptedCardInfo, 300, BLANK)
+                + StringUtils.rightPad(BLANK, 47, BLANK);
+        int totalLength = data.length();
+        return StringUtils.leftPad(String.valueOf(totalLength), 4, BLANK) + data;
+    }
 
     /**
      * 결제 Request
@@ -65,19 +103,10 @@ public class Transaction {
         @Length(min = 2, max = 2)
         private String month; // 할부개월수, 00(일시불), 1 ~ 12
         @NotNull
+        @Min(100)
+        @Max(1000000000)
         private BigDecimal payAmount; // 거래금액(100원 이상, 10억원 이하, 숫자)
         private BigDecimal vat; // 부가가치세
-    }
-
-    public static Transaction create(Request request) {
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(request.getTransactionType());
-        transaction.setPeriod(request.getPeriod());
-        transaction.setCvc(request.getCvc());
-        transaction.setMonth(request.getMonth());
-        transaction.setPayAmount(request.getPayAmount());
-        transaction.setVat(request.getVat());
-        return transaction;
     }
 
     /**
