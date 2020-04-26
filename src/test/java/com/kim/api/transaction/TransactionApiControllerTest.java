@@ -33,7 +33,7 @@ class TransactionApiControllerTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setCvc("012");
         transaction.setMonth("00");
-        transaction.setPeriod("1212");
+        transaction.setPeriod("121");
         transaction.setCardNumber("1234567890123456");
         transaction.setPayAmount(new BigDecimal(100));
 
@@ -44,5 +44,19 @@ class TransactionApiControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactionId").exists())
                 .andExpect(jsonPath("$.rawData").exists());
+    }
+
+    @Test
+    void payment_400error() throws Exception {
+        Transaction.Request transaction = new Transaction.Request();
+        transaction.setTransactionType(TransactionType.PAYMENT);
+        transaction.setCardNumber("1");
+
+        mvc.perform(post("/api/transaction/payment")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsBytes(transaction))).andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.result").value("fail"));
     }
 }
