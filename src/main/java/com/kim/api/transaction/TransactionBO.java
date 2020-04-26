@@ -1,7 +1,6 @@
 package com.kim.api.transaction;
 
 import com.kim.api.card.TransactionExternalBO;
-import com.kim.api.core.TransactionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +21,8 @@ public class TransactionBO {
      *
      * @param transaction 결제정보
      */
-    public TransactionResponse payment(Transaction transaction) {
-        TransactionResponse response = new TransactionResponse();
+    public Transaction.Response payment(Transaction transaction) {
+        Transaction.Response response = new Transaction.Response();
 
         response.setTransactionId("2020042600000000001");
         response.setRawData("enums");

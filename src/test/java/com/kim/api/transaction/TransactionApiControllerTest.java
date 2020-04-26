@@ -29,7 +29,7 @@ class TransactionApiControllerTest {
 
     @Test
     void payment() throws Exception {
-        Transaction transaction = new Transaction();
+        Transaction.Request transaction = new Transaction.Request();
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setCvc(123);
         transaction.setMonth(12);

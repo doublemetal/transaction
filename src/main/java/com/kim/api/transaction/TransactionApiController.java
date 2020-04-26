@@ -1,6 +1,5 @@
 package com.kim.api.transaction;
 
-import com.kim.api.core.TransactionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +19,7 @@ public class TransactionApiController {
      * @return 결제 결과
      */
     @PostMapping("/payment")
-    public TransactionResponse payment(@RequestBody Transaction transaction) {
+    public Transaction.Response payment(@RequestBody Transaction transaction) {
         return transactionBO.payment(transaction);
     }
 
