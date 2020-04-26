@@ -26,7 +26,7 @@ public class TransactionBO {
         TransactionResponse response = new TransactionResponse();
 
         response.setTransactionId("2020042600000000001");
-        response.setRawData("test");
+        response.setRawData("enums");
 
         return response;
     }

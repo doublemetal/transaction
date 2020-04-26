@@ -1,5 +1,6 @@
 package com.kim.api.transaction;
 
+import com.kim.api.transaction.enums.TransactionType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class Transaction {
-    private String transactionType; // 거래유형
+    private TransactionType transactionType; // 거래유형
     private String period; // 유효기간(4자리 숫자, mmyy)
     private int cvc; // cvc(3자리 숫자)
     private int month; // 할부개월수, 0(일시불), 1 ~ 12
