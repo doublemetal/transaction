@@ -2,11 +2,13 @@ package com.kim.api.transaction;
 
 import com.kim.api.core.BigDecimalUtils;
 import com.kim.api.core.CommonResponse;
+import com.kim.api.core.CryptoUtils;
 import com.kim.api.core.StringUtils;
 import com.kim.api.transaction.enums.TransactionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
@@ -112,6 +114,7 @@ public class Transaction {
     /**
      * 결제 성공 Response
      */
+    @ToString
     @Getter
     @Setter
     @NoArgsConstructor
@@ -129,6 +132,43 @@ public class Transaction {
             response.setTransactionId(transaction.getTransactionId());
             response.setRawData(transaction.getRawData());
             return response;
+        }
+    }
+
+    /**
+     * 데이터 조회 Response
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Data extends CommonResponse {
+        private String transactionId;
+        private String cardNumber;
+        private String period;
+        private String cvc;
+        private TransactionType transactionType;
+        private BigDecimal payAmount;
+        private BigDecimal vat;
+
+
+        public Data(CommonResponse response) {
+            this.result = response.getResult();
+            this.message = response.getMessage();
+        }
+
+        public static Data create(Transaction transaction, CommonResponse commonResponse) {
+            Transaction.Data data = new Transaction.Data(commonResponse);
+            data.setTransactionId(transaction.getTransactionId());
+
+            String[] cardInfos = CryptoUtils.decrypt(transaction.getEncryptedCardInfo()).split(StringUtils.DEFAULT_SEPARATOR);
+
+            data.setCardNumber(cardInfos[0]);
+            data.setPeriod(cardInfos[1]);
+            data.setCvc(cardInfos[2]);
+            data.setTransactionType(transaction.getTransactionType());
+            data.setPayAmount(transaction.getPayAmount());
+            data.setVat(transaction.getVat());
+            return data;
         }
     }
 }

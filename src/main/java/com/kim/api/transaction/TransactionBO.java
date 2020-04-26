@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 /**
  * 결제, 결제취소를 처리하고 카드사와 통신을 요청
@@ -45,5 +46,10 @@ public class TransactionBO {
         Transaction save = transactionRepository.save(transaction);
 
         return Transaction.Response.create(save, new CommonResponse("success", "Transaction success"));
+    }
+
+    public Transaction.Data getTransaction(String transactionId) {
+        Optional<Transaction> transaction = transactionRepository.findById(transactionId);
+        return Transaction.Data.create(transaction.orElseThrow(() -> new RuntimeException("No transaction")), new CommonResponse("success", "Transaction is exists"));
     }
 }

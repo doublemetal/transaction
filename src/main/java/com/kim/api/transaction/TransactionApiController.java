@@ -41,7 +41,7 @@ public class TransactionApiController {
      * @return 결제 정보
      */
     @GetMapping("/{transactionId}")
-    public String getTransaction(@PathVariable String transactionId) {
-        return "transaction";
+    public Transaction.Data getTransaction(@PathVariable String transactionId) {
+        return transactionBO.getTransaction(transactionId);
     }
 }

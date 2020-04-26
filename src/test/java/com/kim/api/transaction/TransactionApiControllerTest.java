@@ -2,6 +2,7 @@ package com.kim.api.transaction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kim.api.transaction.enums.TransactionType;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,14 +11,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Slf4j
 @RunWith(SpringJUnit4ClassRunner.class)
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -27,8 +31,7 @@ class TransactionApiControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    void payment() throws Exception {
+    private Transaction.Request getTestTransaction() {
         Transaction.Request transaction = new Transaction.Request();
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setCvc("012");
@@ -36,10 +39,15 @@ class TransactionApiControllerTest {
         transaction.setPeriod("1212");
         transaction.setCardNumber("1234567890123456");
         transaction.setPayAmount(new BigDecimal(100));
+        return transaction;
+    }
 
+    @Test
+    void payment() throws Exception {
         mvc.perform(post("/api/transaction/payment")
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsBytes(transaction))).andDo(print())
+                .content(objectMapper.writeValueAsString(getTestTransaction())))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.transactionId").exists())
@@ -54,9 +62,29 @@ class TransactionApiControllerTest {
 
         mvc.perform(post("/api/transaction/payment")
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsBytes(transaction))).andDo(print())
+                .content(objectMapper.writeValueAsString(transaction))).andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.result").value("fail"));
+    }
+
+    @Test
+    void paymentSearch() throws Exception {
+        Transaction.Request request = getTestTransaction();
+
+        MvcResult mvcResult = mvc.perform(post("/api/transaction/payment")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(request)))
+                .andReturn();
+
+        Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
+
+        mvc.perform(get("/api/transaction/" + response.getTransactionId())
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.transactionId").value(response.getTransactionId()))
+                .andExpect(jsonPath("$.cvc").value(request.getCvc()));
     }
 }
