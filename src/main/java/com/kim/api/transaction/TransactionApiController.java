@@ -37,6 +37,16 @@ public class TransactionApiController {
     }
 
     /**
+     * 부분취소
+     *
+     * @return 취소 결과
+     */
+    @PostMapping("/cancel-partial")
+    public Transaction.Response cancelPartial(@Valid @RequestBody Transaction.Cancel cancel) {
+        return transactionBO.cancelPartial(cancel);
+    }
+
+    /**
      * 결제정보 조회
      *
      * @return 결제 정보

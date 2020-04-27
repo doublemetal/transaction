@@ -70,7 +70,7 @@ public class TransactionBO {
     }
 
     /**
-     * 결제취소(전체, 부분취소)
+     * 결제취소(전체)
      */
     public Transaction.Response cancel(Transaction.Cancel cancel) {
         boolean cancelable = transactionRepository.countByOriginalTransactionId(cancel.getTransactionId()) == 0;
@@ -114,5 +114,26 @@ public class TransactionBO {
     private String generateId(long sequence) {
         return DateUtils.getToday() + StringUtils.leftPad(StringUtils
                 .substring(String.valueOf(sequence), 0, TRANSACTION_ID_SEQUENCE_LENGTH), TRANSACTION_ID_SEQUENCE_LENGTH, "0");
+    }
+
+    /**
+     * 부분취소
+     */
+    public Transaction.Response cancelPartial(Transaction.Cancel cancel) {
+        if (cancel.getVat() != null && cancel.getVat().compareTo(cancel.getPayAmount()) > 0) {
+            throw new RuntimeException("VAT is greater than the pay amount");
+        }
+
+        Transaction original = transactionRepository.findByTransactionId(cancel.getTransactionId()).orElseThrow(noTransaction);
+        if (original.getPayAmount().compareTo(cancel.getPayAmount()) != 0) {
+            throw new RuntimeException("Cancel amount is not valid");
+        }
+
+        Transaction transaction = getCancelTransaction(cancel, original);
+
+        Transaction save = transactionRepository.save(transaction);
+        save.setTransactionId(generateId(save.getSequence()));
+        transactionExternalBO.payment(transaction);
+        return Transaction.Response.create(save, new CommonResponse("success", "Transaction cancel success"));
     }
 }

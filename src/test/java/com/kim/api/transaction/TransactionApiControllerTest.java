@@ -33,6 +33,24 @@ class TransactionApiControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private ResultActions callPost(String url, Object request) throws Exception {
+        return mvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(request)));
+    }
+
+    private ResultActions callPayment(Transaction.Request request) throws Exception {
+        return callPost("/api/transaction/payment", request);
+    }
+
+    private ResultActions callCancel(Transaction.Cancel cancel) throws Exception {
+        return callPost("/api/transaction/cancel", cancel);
+    }
+
+    private ResultActions callCancelPartial(Transaction.Cancel cancel) throws Exception {
+        return callPost("/api/transaction/cancel-partial", cancel);
+    }
+
     private Transaction.Request getTestTransaction(int amount, Integer vat) {
         Transaction.Request transaction = new Transaction.Request();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -43,6 +61,14 @@ class TransactionApiControllerTest {
         transaction.setPayAmount(new BigDecimal(amount));
         transaction.setVat(new BigDecimal(vat));
         return transaction;
+    }
+
+    private Transaction.Cancel getPartialCancel(Transaction.Response response, int amount, Integer vat) {
+        Transaction.Cancel cancel = new Transaction.Cancel();
+        cancel.setTransactionId(response.getTransactionId());
+        cancel.setPayAmount(new BigDecimal(amount));
+        cancel.setVat(new BigDecimal(vat));
+        return cancel;
     }
 
     @Test
@@ -156,38 +182,18 @@ class TransactionApiControllerTest {
                 .andExpect(jsonPath("$.message").value("VAT is greater than the pay amount"));
     }
 
-    private ResultActions callPayment(Transaction.Request request) throws Exception {
-        return mvc.perform(post("/api/transaction/payment")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(request)));
-    }
-
-    private ResultActions callCancel(Transaction.Cancel cancel) throws Exception {
-        return mvc.perform(post("/api/transaction/cancel")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(cancel)));
-    }
-
-    private Transaction.Cancel getPartialCancel(Transaction.Response response, int amount, Integer vat) {
-        Transaction.Cancel cancel = new Transaction.Cancel();
-        cancel.setTransactionId(response.getTransactionId());
-        cancel.setPayAmount(new BigDecimal(amount));
-        cancel.setVat(new BigDecimal(vat));
-        return cancel;
-    }
-
     @Test
     void cancel_partial1() throws Exception {
         Transaction.Request request = getTestTransaction(11000, 1000);
         MvcResult mvcResult = callPayment(request).andReturn();
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
-        callCancel(getPartialCancel(response, 1100, 100)).andExpect(status().isOk());
-        callCancel(getPartialCancel(response, 3300, null)).andExpect(status().isOk());
-        callCancel(getPartialCancel(response, 7000, null)).andExpect(status().is5xxServerError());
-        callCancel(getPartialCancel(response, 6600, 700)).andExpect(status().is5xxServerError());
-        callCancel(getPartialCancel(response, 6600, 600)).andExpect(status().isOk());
-        callCancel(getPartialCancel(response, 100, null)).andExpect(status().is5xxServerError());
+        callCancelPartial(getPartialCancel(response, 1100, 100)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 3300, null)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 7000, null)).andExpect(status().is5xxServerError());
+        callCancelPartial(getPartialCancel(response, 6600, 700)).andExpect(status().is5xxServerError());
+        callCancelPartial(getPartialCancel(response, 6600, 600)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 100, null)).andExpect(status().is5xxServerError());
     }
 
     @Test
@@ -196,9 +202,9 @@ class TransactionApiControllerTest {
         MvcResult mvcResult = callPayment(request).andReturn();
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
-        callCancel(getPartialCancel(response, 10000, 0)).andExpect(status().isOk());
-        callCancel(getPartialCancel(response, 10000, 0)).andExpect(status().is5xxServerError());
-        callCancel(getPartialCancel(response, 10000, 909)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 10000, 0)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 10000, 0)).andExpect(status().is5xxServerError());
+        callCancelPartial(getPartialCancel(response, 10000, 909)).andExpect(status().isOk());
     }
 
     @Test
@@ -207,9 +213,9 @@ class TransactionApiControllerTest {
         MvcResult mvcResult = callPayment(request).andReturn();
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
-        callCancel(getPartialCancel(response, 20000, null)).andExpect(status().isOk());
-        callCancel(getPartialCancel(response, 10000, 1000)).andExpect(status().isOk());
-        callCancel(getPartialCancel(response, 10000, 909)).andExpect(status().is5xxServerError());
-        callCancel(getPartialCancel(response, 10000, null)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 20000, null)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 10000, 1000)).andExpect(status().isOk());
+        callCancelPartial(getPartialCancel(response, 10000, 909)).andExpect(status().is5xxServerError());
+        callCancelPartial(getPartialCancel(response, 10000, null)).andExpect(status().isOk());
     }
 }
