@@ -70,7 +70,7 @@ public class TransactionBO {
     }
 
     /**
-     * 결제취소(전체)
+     * 결제취소(전체, 부분취소)
      */
     public Transaction.Response cancel(Transaction.Cancel cancel) {
         boolean cancelable = transactionRepository.countByOriginalTransactionId(cancel.getTransactionId()) == 0;

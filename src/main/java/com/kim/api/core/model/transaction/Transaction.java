@@ -30,7 +30,7 @@ public class Transaction {
 
     @Id
     @GeneratedValue
-    private long sequence; //
+    private long sequence; // 거래번호 생성용
 
     @Column(name = "trx_id", length = 20)
     private String transactionId; // 거래시간 + Sequence
