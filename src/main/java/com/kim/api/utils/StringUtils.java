@@ -1,4 +1,4 @@
-package com.kim.api.core;
+package com.kim.api.utils;
 
 /**
  * Apache common lang3 을 기반으로한 StringUtils

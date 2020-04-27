@@ -1,5 +1,6 @@
 package com.kim.api.core;
 
+import com.kim.api.utils.CryptoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 

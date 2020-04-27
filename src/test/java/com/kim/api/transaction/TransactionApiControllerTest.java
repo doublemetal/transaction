@@ -1,6 +1,7 @@
 package com.kim.api.transaction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kim.api.core.model.transaction.Transaction;
 import com.kim.api.transaction.enums.TransactionType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -99,7 +100,7 @@ class TransactionApiControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.transactionId").value(cancel.getTransactionId()))
+                .andExpect(jsonPath("$.transactionId").exists())
                 .andExpect(jsonPath("$.rawData").exists());
     }
 

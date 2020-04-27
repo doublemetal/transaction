@@ -1,10 +1,10 @@
-package com.kim.api.transaction;
+package com.kim.api.core.model.transaction;
 
-import com.kim.api.core.BigDecimalUtils;
 import com.kim.api.core.CommonResponse;
-import com.kim.api.core.CryptoUtils;
-import com.kim.api.core.StringUtils;
 import com.kim.api.transaction.enums.TransactionType;
+import com.kim.api.utils.BigDecimalUtils;
+import com.kim.api.utils.CryptoUtils;
+import com.kim.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,13 +29,13 @@ public class Transaction {
     private static final String NUMBER_BLANK = "0";
 
     @Id
-    @Column(length = 20)
+    @Column(name = "trx_id", length = 20)
     private String transactionId; // 거래시간 + Sequence
     @Column(length = 450)
     private String rawData; // 카드사에 전송하는 string 데이터
-    @Column(length = 20)
+    @Column(name = "origin_trx_id", length = 20)
     private String originalTransactionId; // 취소의 원거래번호
-    @Column(length = 10)
+    @Column(name = "trx_type", length = 10)
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType; // 거래유형
 

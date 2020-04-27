@@ -1,6 +1,6 @@
 package com.kim.api.card;
 
-import com.kim.api.transaction.Transaction;
+import com.kim.api.core.model.transaction.Transaction;
 import com.kim.api.transaction.enums.TransactionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

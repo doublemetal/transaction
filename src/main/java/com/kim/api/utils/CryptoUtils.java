@@ -1,4 +1,4 @@
-package com.kim.api.core;
+package com.kim.api.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import sun.misc.BASE64Decoder;

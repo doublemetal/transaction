@@ -2,8 +2,9 @@ package com.kim.api.transaction;
 
 import com.kim.api.card.TransactionExternalBO;
 import com.kim.api.core.CommonResponse;
-import com.kim.api.core.CryptoUtils;
-import com.kim.api.core.StringUtils;
+import com.kim.api.core.model.transaction.Transaction;
+import com.kim.api.utils.CryptoUtils;
+import com.kim.api.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +24,12 @@ public class TransactionBO {
     private static final Supplier<RuntimeException> noTransaction = () -> new RuntimeException("No transaction");
     private final TransactionRepository transactionRepository;
     private final TransactionExternalBO transactionExternalBO;
+    private final TransactionIdBO transactionIdBO;
 
-    public TransactionBO(TransactionRepository transactionRepository, TransactionExternalBO transactionExternalBO) {
+    public TransactionBO(TransactionRepository transactionRepository, TransactionExternalBO transactionExternalBO, TransactionIdBO transactionIdBO) {
         this.transactionRepository = transactionRepository;
         this.transactionExternalBO = transactionExternalBO;
+        this.transactionIdBO = transactionIdBO;
     }
 
     /**
@@ -46,8 +49,7 @@ public class TransactionBO {
             throw new RuntimeException("VAT is greater than the pay amount");
         }
 
-        // TODO transactionId 생성
-        transaction.setTransactionId("12345678901234567890");
+        transaction.setTransactionId(transactionIdBO.generateId());
 
         // TODO 결제가 가능한 카드인지 체크 (Multi thread)
 
@@ -96,7 +98,7 @@ public class TransactionBO {
     private Transaction getCancelTransaction(Transaction.Cancel cancel, Transaction original) {
         Transaction transaction = new Transaction();
         transaction.setPayAmount(cancel.getPayAmount());
-        transaction.setTransactionId("12345678901234567890"); // TODO 신규 번호 할당
+        transaction.setTransactionId(transactionIdBO.generateId());
         transaction.setOriginalTransactionId(cancel.getTransactionId());
         transaction.setTransactionType(cancel.getTransactionType());
 
