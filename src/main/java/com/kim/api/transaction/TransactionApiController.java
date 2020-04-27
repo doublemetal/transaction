@@ -43,6 +43,6 @@ public class TransactionApiController {
      */
     @GetMapping("/{transactionId}")
     public Transaction.Data getTransaction(@PathVariable String transactionId) {
-        return transactionBO.getCancelTransaction(transactionId);
+        return transactionBO.getTransaction(transactionId);
     }
 }

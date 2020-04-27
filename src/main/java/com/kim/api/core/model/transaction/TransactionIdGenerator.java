@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.validation.constraints.Max;
 
+@Deprecated // TODO 멀티스레드 문제로, 시퀀스로 id 생성
 @Entity(name = "trx_id")
 @Getter
 @Setter

@@ -29,8 +29,12 @@ public class Transaction {
     private static final String NUMBER_BLANK = "0";
 
     @Id
+    @GeneratedValue
+    private long sequence; //
+
     @Column(name = "trx_id", length = 20)
     private String transactionId; // 거래시간 + Sequence
+
     @Column(length = 450)
     private String rawData; // 카드사에 전송하는 string 데이터
     @Column(name = "origin_trx_id", length = 20)

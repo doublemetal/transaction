@@ -11,6 +11,7 @@ import java.util.Optional;
 /**
  * Transaction Id 를 관리
  */
+@Deprecated // TODO 멀티스레드 문제로, 시퀀스로 id 생성
 @Slf4j
 @Service
 public class TransactionIdBO {
@@ -36,6 +37,8 @@ public class TransactionIdBO {
             if (exists.getSeq() >= 999999999999L) {
                 exists.setSeq(0L);
             }
+
+            // TODO 멀테스레드에 안전하게 개선
             exists.setSeq(exists.getSeq() + 1);
             transactionIdRepository.save(exists);
         } else {
