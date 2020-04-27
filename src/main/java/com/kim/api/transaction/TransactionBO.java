@@ -146,7 +146,11 @@ public class TransactionBO {
         }
 
         if (BigDecimalUtils.add(totalVat, data.getVat()).compareTo(original.getVat()) > 0) {
-            throw new RuntimeException("The cancel vat is greater than the remaining pay vat");
+            if (cancel.getVat() == null) {
+                data.setVat(original.getVat().subtract(totalVat)); // 취소가 가능한데, VAT 가 남은 금액보다 더 큰 경우이고 자동계산이면, 남은 VAT 으로 차감한다
+            } else {
+                throw new RuntimeException("The cancel vat is greater than the remaining pay vat");
+            }
         }
 
         if (original.getVat().subtract(BigDecimalUtils.add(totalVat, data.getVat()))

@@ -59,7 +59,7 @@ class TransactionApiControllerTest {
         transaction.setPeriod("1212");
         transaction.setCardNumber("1234567890123456");
         transaction.setPayAmount(new BigDecimal(amount));
-        transaction.setVat(new BigDecimal(vat));
+        transaction.setVat(vat == null ? null : new BigDecimal(vat));
         return transaction;
     }
 
@@ -209,11 +209,10 @@ class TransactionApiControllerTest {
 
     @Test
     void cancel_partial3() throws Exception {
-        Transaction.Request request = getTestTransaction(11000, 1000);
+        Transaction.Request request = getTestTransaction(20000, null);
         MvcResult mvcResult = callPayment(request).andReturn();
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
-        callCancelPartial(getPartialCancel(response, 20000, null)).andExpect(status().isOk());
         callCancelPartial(getPartialCancel(response, 10000, 1000)).andExpect(status().isOk());
         callCancelPartial(getPartialCancel(response, 10000, 909)).andExpect(status().is5xxServerError());
         callCancelPartial(getPartialCancel(response, 10000, null)).andExpect(status().isOk());
