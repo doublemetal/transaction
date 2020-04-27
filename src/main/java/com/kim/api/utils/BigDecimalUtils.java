@@ -12,4 +12,14 @@ public class BigDecimalUtils {
         }
         return bigDecimal.toPlainString();
     }
+
+    public static BigDecimal add(BigDecimal operator, BigDecimal operand) {
+        if (operator == null) {
+            operator = BigDecimal.ZERO;
+        }
+        if (operand == null) {
+            operand = BigDecimal.ZERO;
+        }
+        return operator.add(operand);
+    }
 }

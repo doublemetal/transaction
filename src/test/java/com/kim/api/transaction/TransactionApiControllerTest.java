@@ -67,7 +67,7 @@ class TransactionApiControllerTest {
         Transaction.Cancel cancel = new Transaction.Cancel();
         cancel.setTransactionId(response.getTransactionId());
         cancel.setPayAmount(new BigDecimal(amount));
-        cancel.setVat(new BigDecimal(vat));
+        cancel.setVat(vat == null ? null : new BigDecimal(vat));
         return cancel;
     }
 
