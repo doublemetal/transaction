@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -44,9 +45,7 @@ class TransactionApiControllerTest {
 
     @Test
     void payment() throws Exception {
-        mvc.perform(post("/api/transaction/payment")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(getTestTransaction())))
+        callPayment(getTestTransaction())
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -60,9 +59,8 @@ class TransactionApiControllerTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setCardNumber("1");
 
-        mvc.perform(post("/api/transaction/payment")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(transaction))).andDo(print())
+        callPayment(transaction)
+                .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.result").value("fail"));
@@ -72,10 +70,7 @@ class TransactionApiControllerTest {
     void paymentSearch() throws Exception {
         Transaction.Request request = getTestTransaction();
 
-        MvcResult mvcResult = mvc.perform(post("/api/transaction/payment")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(request)))
-                .andReturn();
+        MvcResult mvcResult = callPayment(request).andReturn();
 
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
@@ -92,10 +87,27 @@ class TransactionApiControllerTest {
     void cancel() throws Exception {
         Transaction.Request request = getTestTransaction();
 
-        MvcResult mvcResult = mvc.perform(post("/api/transaction/payment")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(request)))
-                .andReturn();
+        MvcResult mvcResult = callPayment(request).andReturn();
+        Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
+
+        Transaction.Cancel cancel = new Transaction.Cancel();
+        cancel.setTransactionId(response.getTransactionId());
+        cancel.setPayAmount(request.getPayAmount());
+        cancel.setVat(request.getVat());
+
+        callCancel(cancel)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.transactionId").value(cancel.getTransactionId()))
+                .andExpect(jsonPath("$.rawData").exists());
+    }
+
+    @Test
+    void cancel_retry() throws Exception {
+        Transaction.Request request = getTestTransaction();
+
+        MvcResult mvcResult = callPayment(request).andReturn();
 
         Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
 
@@ -104,13 +116,71 @@ class TransactionApiControllerTest {
         cancel.setPayAmount(request.getPayAmount());
         cancel.setVat(request.getVat());
 
-        mvc.perform(post("/api/transaction/cancel")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
-                .content(objectMapper.writeValueAsString(cancel)))
+        callCancel(cancel);
+
+        // 같은 데이터로 취소 재시도
+        callCancel(cancel)
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.transactionId").value(cancel.getTransactionId()))
-                .andExpect(jsonPath("$.rawData").exists());
+                .andExpect(jsonPath("$.message").value("Already canceled"));
+    }
+
+    @Test
+    void cancel_payAmount_notValid() throws Exception {
+        Transaction.Request request = getTestTransaction();
+
+        MvcResult mvcResult = callPayment(request).andReturn();
+
+        Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
+
+        Transaction.Cancel cancel = new Transaction.Cancel();
+        cancel.setTransactionId(response.getTransactionId());
+        cancel.setPayAmount(request.getPayAmount().add(new BigDecimal(500)));
+        cancel.setVat(request.getVat());
+
+        callCancel(cancel);
+
+        // 결제금액과 다르게 취소
+        callCancel(cancel)
+                .andDo(print())
+                .andExpect(status().is5xxServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message").value("Cancel amount is not valid"));
+    }
+
+    @Test
+    void cancel_vat_greaterThenPayAmount() throws Exception {
+        Transaction.Request request = getTestTransaction();
+
+        MvcResult mvcResult = callPayment(request).andReturn();
+
+        Transaction.Response response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Transaction.Response.class);
+
+        Transaction.Cancel cancel = new Transaction.Cancel();
+        cancel.setTransactionId(response.getTransactionId());
+        cancel.setPayAmount(request.getPayAmount());
+        cancel.setVat(request.getPayAmount().add(new BigDecimal(500)));
+
+        callCancel(cancel);
+
+        // 결제금액보다 큰 VAT 로 취소
+        callCancel(cancel)
+                .andDo(print())
+                .andExpect(status().is5xxServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message").value("VAT is greater than the pay amount"));
+    }
+
+    private ResultActions callPayment(Transaction.Request request) throws Exception {
+        return mvc.perform(post("/api/transaction/payment")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(request)));
+    }
+
+    private ResultActions callCancel(Transaction.Cancel cancel) throws Exception {
+        return mvc.perform(post("/api/transaction/cancel")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(cancel)));
     }
 }
