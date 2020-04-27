@@ -36,7 +36,7 @@ public class Transaction {
     @Column(length = 20)
     private String originalTransactionId; // 취소의 원거래번호
     @Column(length = 10)
-    @Convert(converter = TransactionTypeConverter.class)
+    @Enumerated(EnumType.STRING)
     private TransactionType transactionType; // 거래유형
 
     @Transient
